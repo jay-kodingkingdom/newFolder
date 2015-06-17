@@ -2,23 +2,34 @@
 
 require_once('dataObjectConfig.php');
 
-final class dataObject{
+class dataObject{
 
-	protected static $className;
-	protected static $classFields;
+	protected static $className='dataObject';
+	protected static $classFields=array('love','peace');
 
+	public static function getFields(){
+		return static::$classFields;}
+		public static function getClassName(){
+			return static::$className;}
+	
+	
+	
+	
 	private $name;
 
 	public function getName(){
 		return $this->name;}
+
 		
-	public static function getFields(){
-		return static::$classFields;}
-	public static function getClassName(){
-		return static::$className;}
 		
-	private static $currentObjs=array();	
+		
+		
+	private static $memoryObjs=array();	
 	private static $dataObjectsDatabase=false;
+	
+	
+	
+	
 	
 	private static function getDatabase(){
 		if (!dataObject::$dataObjectsDatabase){
@@ -26,7 +37,10 @@ final class dataObject{
 		if (dataObject::$dataObjectsDatabase->connect_error)
 			throw new Exception('Database connect error');
 		return dataObject::$dataObjectsDatabase;}
-
+		
+		
+		
+		
 	private static function fetchResult($question){
 		$result = dataObject::getDatabase()->query($question);
 		if (!$result)
@@ -36,81 +50,157 @@ final class dataObject{
 		$result = dataObject::getDatabase()->query($question);
 		return $result;}	
 		
-	public static final function fetchObject($objName){
-		$hasKey= function(&$array, $key){
+		
+		
+		
+	private static function hasKey(&$array, $key){
 			if (!is_array($array)){
 				$array=array();}
-				return array_key_exists($key, $array);};
-		$hasExists= function($rows){
+			return array_key_exists($key, $array);}
+	private static function hasExists($rows){
 			if (!isset($rows->num_rows)) return false;
-			return $rows->num_rows;};
+			return $rows->num_rows;}		
+		
+
 			
+			
+			
+			
+	private static function classExists($className){
+		$objClass = static::$className;
+		return dataObject::
+			hasExists(
+					dataObject::getResult(
+							'select 1 from INFORMATION_SCHEMA.TABLES
+							 where TABLE_NAME = '.
+							"'".$objClass."'"
+							.';'));}
+		
+	private static function makeClass($className){
+		$objClass = static::$className;
+		$dataFieldsFormat = "";
+		foreach (static::$classFields as $field){
+			$dataFieldsFormat .= ", ".
+				$field." varchar(255)";}
+		#echo '<br>making new sql class'.$callCount;
+		dataObject::fetchResult(
+			'create table '.$objClass.
+				' (dataObjectName char(255) PRIMARY KEY'
+				.$dataFieldsFormat.
+				');');}
+				
+	private static function instanceExists($instanceName){
+		$objClass = static::$className;
+		return dataObject::
+			hasExists(
+				dataObject::getResult(
+						'select 1 from '.dataObjectsDatabase.'.'.$objClass.
+						' where dataObjectName = '.
+						"'".$instanceName."'".
+						';'));}
+		
+	private static function makeInstance($instanceName){		
+		$objClass = static::$className;
+		dataObject::fetchResult(
+			'insert into '.dataObjectsDatabase.'.'.$objClass.
+				' (dataObjectName)
+				 VALUES ('.
+				"'".$instanceName."'".
+				');');}
+		
+		
+	private static function rememberInstance($instanceName){		
+		$objClass = static::$className;
+		return
+			dataObject::hasKey(
+				dataObject::$memoryObjs[$objClass]
+					, $instanceName);}
+		
+	private static function fieldExists($fieldName){
+		return 
+			in_array($fieldName
+					, static::$classFields);}
+		
+	private function fetchField($fieldName){
+		$objClass = static::$className;
+		$objName = $this->name;
+		
+		return dataObject::fetchResult(
+				'select '.$fieldName.
+				' from '.dataObjectsDatabase.'.'.$objClass
+				.' where dataObjectName = '."'".$objName."'".';')
+				->fetch_assoc()[$fieldName];}
+		
+	private function putField($fieldName, $fieldValue){
+		$objClass = static::$className;
+		$objName = $this->name;
+		
+		dataObject::fetchResult(
+				'update '.dataObjectsDatabase.'.'.$objClass.
+					' set '.$fieldName.'='.
+					"'".$fieldValue."'".
+					' where dataObjectName='.
+					"'".$objName."'".';');}	
+		
+		
+		
+		
+		
+		
+		
+	public static final function fetchInstance($objName){
+		#static $callCount=0; $callCount++;		
 		$objClass = static::$className;
 
-		if (! $hasKey( dataObject::$currentObjs[$objClass], $objName )) {
-
-			$result = dataObject::getResult('select 1 from INFORMATION_SCHEMA.TABLES where TABLE_NAME = '."'".$objClass."'".';');
-				
-			#var_dump($sqlResult);
-			if (! $hasExists($result)){
-				dataObject::fetchResult('create table '.$objClass.' (dataObjectName_____ CHAR(255) PRIMARY KEY);');}
-				
-			$result = dataObject::getResult('select 1 from '.dataObjectsDatabase.'.'.$objClass.' where dataObjectName_____ = '."'".$objName."'".';');
-				
-			#var_dump($sqlResult);
-			if (! $hasExists($result)){
-				return null;}
-				
-			$newObj = new dataObject();
-			$newObj->name=$objName;
-				
-			dataObject::$currentObjs[$objClass][$objName] = $newObj;}
-
-		return dataObject::$currentObjs[$objClass][$objName];}
-	public static final function getObject($objName){
-
-		#static $callCount = 0;$callCount++;
-
-		$hasKey= function(&$array, $key){
-			if (!is_array($array)){
-				$array=array();}
-			return array_key_exists($key, $array);};
-		$hasExists= function($rows){
-			if (!isset($rows->num_rows)) return false;
-			return $rows->num_rows;};
-			
-		$objClass = static::$className;
-
-		if (! $hasKey( dataObject::$currentObjs[$objClass], $objName )) {
+		if (! dataObject::rememberInstance($objName)) {
 
 			#echo '<br><br>making new memory object'.$callCount;			
 
-			$result = dataObject::getResult('select 1 from INFORMATION_SCHEMA.TABLES where TABLE_NAME = '."'".$objClass."'".';');
-			
-			#echo '<br><br>class info:';
-			var_dump($result);
-			if (! $hasExists($result)){
+			if (! dataObject::classExists($objClass)){
 				#echo '<br>making new sql class'.$callCount;			
-				dataObject::fetchResult('create table '.$objClass.' (dataObjectName_____ CHAR(255) PRIMARY KEY);');}
+				dataObject ::makeClass($objClass);}
 			
-			$result = dataObject::getResult('select 1 from '.dataObjectsDatabase.'.'.$objClass.' where dataObjectName_____ = '."'".$objName."'".';');
-			
-			#echo '<br><br>object info:';
-			var_dump($result);
-			if (! $hasExists($result)){
-				#echo '<br>making new sql object'.$callCount;			
-				dataObject::fetchResult('insert into '.$objClass.' (dataObjectName_____) VALUES ('."'".$objName."'".');');}
+			if (!dataObject::instanceExists($objName)){
+				#echo '<br>cannot fetch object'.$callCount;			
+				return null;}
 			
 			$newObj = new dataObject();
 			$newObj->name=$objName;
 			
-			dataObject::$currentObjs[$objClass][$objName] = $newObj;}
+			dataObject::$memoryObjs[$objClass][$objName] = $newObj;}
 		
-		return dataObject::$currentObjs[$objClass][$objName];}
+		return dataObject::$memoryObjs[$objClass][$objName];}
+	public static final function getInstance($objName){
+		#static $callCount=0; $callCount++;		
+		$objClass = static::$className;
 
-	public final function getField($fieldName){
-		if (!array_key_exists($fieldName, static::$classFields)) throw new Exception('Field does not exist');
-		return dataObject::fetchResult(
-				'select 1 from '.dataObjectsDatabase.'.'.$objClass
-					.' where dataObjectName_____ = '."'".$objName."'".';')
-			->fetch_array()[$fieldName];}}
+		if (! dataObject::rememberInstance($objName)) {
+
+			#echo '<br><br>making new memory object'.$callCount;			
+
+			if (! dataObject::classExists($objClass)){
+				#echo '<br>making new sql class'.$callCount;			
+				dataObject ::makeClass($objClass);}
+			
+			if (!dataObject::instanceExists($objName)){
+				#echo '<br>making new sql object'.$callCount;			
+				dataObject::makeInstance($objName);}
+			
+			$newObj = new dataObject();
+			$newObj->name=$objName;
+			
+			dataObject::$memoryObjs[$objClass][$objName] = $newObj;}
+		
+		return dataObject::$memoryObjs[$objClass][$objName];}
+
+	public final function getField($fieldName){		
+		if (! static::fieldExists($fieldName))
+			throw new Exception('Field does not exist');
+	
+		return $this->fetchField($fieldName);}
+
+	public final function setField($fieldName, $fieldValue){
+		if (! static::fieldExists($fieldName))
+			throw new Exception('Field does not exist');
+		
+		$this->putField($fieldName, $fieldValue);}}
