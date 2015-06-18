@@ -1,16 +1,17 @@
 <?php
 
 require_once('dataObjectConfig.php');
+require_once('logger.php');
 
 class dataObject{
 
-	protected static $className='dataObject';
-	protected static $classFields=array('love','peace');
+	const className='dataObject';
+	const classFields=array();
 
 	public static function getFields(){
-		return static::$classFields;}
-		public static function getClassName(){
-			return static::$className;}
+		return static::classFields;}
+	public static function getClassName(){
+		return static::className;}
 	
 	
 	
@@ -66,8 +67,8 @@ class dataObject{
 			
 			
 			
-	private static function classExists($className){
-		$objClass = static::$className;
+	private static function classExists(){
+		$objClass = static::className;
 		return dataObject::
 			hasExists(
 					dataObject::getResult(
@@ -76,122 +77,212 @@ class dataObject{
 							"'".$objClass."'"
 							.';'));}
 		
-	private static function makeClass($className){
-		$objClass = static::$className;
+	private static function makeClass(){
+		$objClass = static::className;
 		$dataFieldsFormat = "";
-		foreach (static::$classFields as $field){
-			$dataFieldsFormat .= ", ".
-				$field." varchar(255)";}
+		foreach (static::classFields as $field){
+			$dataFieldsFormat .= ', '.
+				$field.' blob ';}
 		#echo '<br>making new sql class'.$callCount;
 		dataObject::fetchResult(
 			'create table '.$objClass.
-				' (dataObjectName char(255) PRIMARY KEY'
-				.$dataFieldsFormat.
+				' ('.dataObjectsName.' char(255) PRIMARY KEY'.
+				', '.dataObjectsFreezed.' boolean default false'.
+				$dataFieldsFormat.
 				');');}
 				
 	private static function instanceExists($instanceName){
-		$objClass = static::$className;
+		$objClass = static::className;
 		return dataObject::
 			hasExists(
 				dataObject::getResult(
 						'select 1 from '.dataObjectsDatabase.'.'.$objClass.
-						' where dataObjectName = '.
+						' where '.dataObjectsName.' = '.
 						"'".$instanceName."'".
 						';'));}
 		
 	private static function makeInstance($instanceName){		
-		$objClass = static::$className;
+		$objClass = static::className;
 		dataObject::fetchResult(
 			'insert into '.dataObjectsDatabase.'.'.$objClass.
-				' (dataObjectName)
+				' ('.dataObjectsName.')
 				 VALUES ('.
 				"'".$instanceName."'".
 				');');}
-		
+
+	private static function unmakeInstance($instanceName){
+		$objClass = static::className;
+		dataObject::fetchResult(
+				'delete from '.dataObjectsDatabase.'.'.$objClass.
+						' where '.dataObjectsName.' = '.
+						"'".$instanceName."'".
+						';');}
 		
 	private static function rememberInstance($instanceName){		
-		$objClass = static::$className;
+		$objClass = static::className;
 		return
-			dataObject::hasKey(
+			(dataObject::hasKey(
 				dataObject::$memoryObjs[$objClass]
-					, $instanceName);}
+					, $instanceName) ?
+					dataObject::$memoryObjs[$objClass][$instanceName] :
+					null);}
+
+	private static function memorizeInstance($instanceName){
+		$objClass = static::className;
+			
+		if (! dataObject::hasKey(
+				dataObject::$memoryObjs[$objClass]
+				, $instanceName)){
+			$instance = new $objClass;
+			$instance->name=$instanceName;
+				
+			dataObject::$memoryObjs[$objClass][$instanceName] = $instance;}}
+
+	private static function forgetInstance($instanceName){
+		$objClass = static::className;
+					
+		if (dataObject::hasKey(
+				dataObject::$memoryObjs[$objClass]
+					, $instanceName)){			
+			unset(dataObject::$memoryObjs[$objClass][$instanceName]);}}
 		
 	private static function fieldExists($fieldName){
 		return 
 			in_array($fieldName
-					, static::$classFields);}
+					, static::classFields);}
 		
 	private function fetchField($fieldName){
-		$objClass = static::$className;
+		$objClass = static::className;
 		$objName = $this->name;
 		
-		return dataObject::fetchResult(
-				'select '.$fieldName.
-				' from '.dataObjectsDatabase.'.'.$objClass
-				.' where dataObjectName = '."'".$objName."'".';')
-				->fetch_assoc()[$fieldName];}
+		return json_decode(
+				dataObject::fetchResult(
+						'select '.$fieldName.
+						' from '.dataObjectsDatabase.'.'.$objClass
+						.' where '.dataObjectsName.' = '."'".$objName."'".';')
+				->fetch_assoc()[$fieldName]
+				, true);}
 		
 	private function putField($fieldName, $fieldValue){
-		$objClass = static::$className;
+		$objClass = static::className;
 		$objName = $this->name;
 		
 		dataObject::fetchResult(
 				'update '.dataObjectsDatabase.'.'.$objClass.
 					' set '.$fieldName.'='.
-					"'".$fieldValue."'".
-					' where dataObjectName='.
+					"'".dataObject::getDatabase()->escape_string(
+							json_encode($fieldValue))."'".
+					' where '.dataObjectsName.'='.
 					"'".$objName."'".';');}	
 		
+	private final function setFreezed($freezed){
+		$objClass = static::className;
+		$objName = $this->name;
+
+		dataObject::fetchResult(
+				'update '.dataObjectsDatabase.'.'.$objClass.
+					' set '.dataObjectsFreezed.'='.
+					($freezed?'true':'false').
+					' where '.dataObjectsName.'='.
+					"'".$objName."'".';');}	
+		
+	private final function setDestroy(){}
+	private final function unsetDestroy(){}
+
+
+	
 		
 		
 		
 		
+	private static final function fetchInstances(){
+		$objClass = static::className;
+
+		$instances = array();
+		
+		$result = dataObject::fetchResult(
+						'select '.dataObjectsName.
+						' from '.dataObjectsDatabase.'.'.$objClass.
+						' where '.dataObjectsFreezed.'= false'
+						.';');
+		
+		while ($row = $result->fetch_assoc()) {
+			$objName = $row[dataObjectsName];
+			
+			if (! dataObject::rememberInstance($objName)){
+				static::memorizeInstance($objName);} 
+
+			$instances[$objName]=static::rememberInstance($objName);}
+		
+		return $instances;}	
+		
+		
+		
+		
+		
+
+
+	public static final function getInstances(){
+		return static::fetchInstances();}
 		
 		
 	public static final function fetchInstance($objName){
 		#static $callCount=0; $callCount++;		
-		$objClass = static::$className;
+		$objClass = static::className;
 
-		if (! dataObject::rememberInstance($objName)) {
+		if (! static::rememberInstance($objName)) {
 
 			#echo '<br><br>making new memory object'.$callCount;			
 
-			if (! dataObject::classExists($objClass)){
+			if (! static::classExists()){
 				#echo '<br>making new sql class'.$callCount;			
-				dataObject ::makeClass($objClass);}
+				return null;}
 			
-			if (!dataObject::instanceExists($objName)){
+			if (!static::instanceExists($objName)){
 				#echo '<br>cannot fetch object'.$callCount;			
 				return null;}
 			
-			$newObj = new dataObject();
-			$newObj->name=$objName;
-			
-			dataObject::$memoryObjs[$objClass][$objName] = $newObj;}
+			static::memorizeInstance($objName);}
 		
-		return dataObject::$memoryObjs[$objClass][$objName];}
+		return static::rememberInstance($objName);}
 	public static final function getInstance($objName){
 		#static $callCount=0; $callCount++;		
-		$objClass = static::$className;
+		$objClass = static::className;
 
-		if (! dataObject::rememberInstance($objName)) {
+		if (! static::rememberInstance($objName)) {
 
 			#echo '<br><br>making new memory object'.$callCount;			
 
-			if (! dataObject::classExists($objClass)){
+			if (! static::classExists()){
 				#echo '<br>making new sql class'.$callCount;			
-				dataObject ::makeClass($objClass);}
+				static::makeClass();}
 			
-			if (!dataObject::instanceExists($objName)){
+			if (!static::instanceExists($objName)){
 				#echo '<br>making new sql object'.$callCount;			
-				dataObject::makeInstance($objName);}
-			
-			$newObj = new dataObject();
-			$newObj->name=$objName;
-			
-			dataObject::$memoryObjs[$objClass][$objName] = $newObj;}
+				static::makeInstance($objName);}
+						
+			static::memorizeInstance($objName);}
 		
-		return dataObject::$memoryObjs[$objClass][$objName];}
+		return static::rememberInstance($objName);}
+		
+		
+	
+	public final function destroy(){
+		$objName = $this->name;
+		
+		static::forgetInstance($objName);
+		static::unmakeInstance($objName);}
+		
+	public final function isFreezed(){
+		return $this->fetchField(dataObjectsFreezed);}
+
+	public final function freeze(){
+		$this->setFreezed(true);
+		$this->setDestroy();}
+
+	public final function unfreeze(){
+		$this->setFreezed(false);
+		$this->unsetDestroy();}
 
 	public final function getField($fieldName){		
 		if (! static::fieldExists($fieldName))
