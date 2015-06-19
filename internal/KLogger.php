@@ -128,7 +128,6 @@ class KLogger
 		}
 
 		}
-=======
 	
 	/* Finally, A light, permissions-checking logging class. 
 	 * 
