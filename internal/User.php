@@ -10,10 +10,10 @@ class User extends dataObject{
 
 
 	public final function setUsername($username){
-		if (getUsername()===null)
+		if ($this->getUsername()===null)
 			$this->setField('username',$username);}
 	public final function setPassword($password){
-		if (getPassword()===null)
+		if ($this->getPassword()===null)
 			$this->setField('password',$password);}
 	
 	public final function getUsername(){

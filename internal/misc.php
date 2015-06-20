@@ -8,3 +8,6 @@ function getRandomString($length = 64) {
 		$randomString .= $characters[rand(0, $charactersLength - 1)];
 	}
 	return $randomString;}
+
+function startsWith($haystack, $needle) {
+	return $needle === "" || strrpos($haystack, $needle, -strlen($haystack)) !== FALSE;}

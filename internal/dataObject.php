@@ -196,7 +196,11 @@ class dataObject{
 		
 		
 	private static final function fetchInstances(){
-		$objClass = static::className;
+		$objClass = static::className;			
+
+		if (! static::classExists()){
+			#echo '<br>making new sql class'.$callCount;			
+			static::makeClass();}
 
 		$instances = array();
 		
