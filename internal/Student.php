@@ -2,27 +2,32 @@
 
 require_once('User.php');
 
-final class Admin extends User{
+final class Student extends User{
 	
-	const className='Admin';
+	const className='Student';
 	const classFields=array('username','password',
-			'displayname');
+			'displayname','profile'
+	);
 	
 	public final function setDisplayname($displayname){
 		$this->setField('displayname',$displayname);}
+	public final function setProfile($profile){
+		$this->setField('profile',$profile);}
+	public final function getProfile(){
+		return $this->getField('profile');}
 	public final function getDisplayname(){
 		return $this->getField('displayname');}
+	
+	public static final function getStudent($username, $password, $profile, $displayname){
+		if (Student::fetchStudent($displayname)) return null;
 
-	public static final function getAdmin($username, $password, $displayname){
-		$admin = Admin::fetchUser($username, $password, $displayname);
-		if ($admin === null) {
-			$admin = Admin::getUser($username, $password);
-			$admin->setDisplayName($displayname);}
-		return $admin;}
-	public static final function fetchAdmin($username, $password, $displayname){
-		foreach (Admin::getInstances() as $admin){
-			if ($admin->getUsername() == $username &&
-					$admin->getPassword() == $password &&
-					$admin->getDisplayname() == $displayname)
-						return $admin;}
+		$student = Student::getUser($username, $password);
+		$student->setDisplayName($displayname);
+		$student->setProfile($profile);
+
+		return $student;}
+	public static final function fetchStudent($displayname){
+		foreach (Student::getInstances() as $student){
+			if ($student->getDisplayname() == $displayname)
+				return $student;}
 		return null;}}

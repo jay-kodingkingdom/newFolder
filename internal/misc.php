@@ -11,3 +11,6 @@ function getRandomString($length = 64) {
 
 function startsWith($haystack, $needle) {
 	return $needle === "" || strrpos($haystack, $needle, -strlen($haystack)) !== FALSE;}
+
+function say($string){
+	echo $string."\n";}

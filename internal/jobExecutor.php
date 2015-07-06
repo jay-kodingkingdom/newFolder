@@ -2,19 +2,19 @@
 
 require_once('dataObject.php');
 require_once('misc.php');
-require_once('timeDot.php');
+require_once('timeSlot.php');
 
 final class JobExecutor extends dataObject{
 
 	const className='JobExecutor';
-	const classFields=array('jobPointer','timeDotSchedulerPointer');
+	const classFields=array('jobPointer','timeSlotsPointer');
 	
-	public static final function scheduleJob($jobPointer, timeDotSchedule $timeDotSchedulerPointer){
+	public static final function scheduleJob($jobPointer, timeSlot $timeSlots){
 		while (JobExecutor::fetchInstance($name=getRandomString())!==null){}
 
 		$jobExecutor = JobExecutor::getInstance($name);
 		$jobExecutor->setField('jobPointer',$jobPointer);
-		$jobExecutor->setField('timeDotSchedulerPointer',$timeDotSchedulerPointer);
+		$jobExecutor->setField('timeSlotsPointer',$timeSlots->getName());
 		$jobExecutor->orderJobSchedule();
 		return $jobExecutor;}
 

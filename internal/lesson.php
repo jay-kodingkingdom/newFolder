@@ -8,88 +8,88 @@ require_once('timeSlot.php');
 require_once('location.php');
 
 
-final class lessonSchedule extends dataObject{
+final class lessons extends dataObject{
 	
 	const className='lessonSchedule';
-	const classFields=array('tutorsPointers','studentsPointers','timeSlotSchedulePointer','location','locationSlot','subject');
+	const classFields=array('tutorsPointers','studentsPointers','timeSlotPointer','locationName','locationSlotNane','subject');
 
 	public final function getTutors(){
 		$tutors = array();
-		foreach (lessonSchedule::getField('tutorsPointers')
+		foreach ($this->getField('tutorsPointers')
 				as $tutorId){
 			$tutor = Tutor::getInstance($tutorId);
 			$tutors[$tutor->getDisplayname()]=$tutor;}
 			return $tutors;}
 	public final function getStudents(){
 		$students = array();
-		foreach (lessonSchedule::getField('studentsPointers')
+		foreach ($this->getField('studentsPointers')
 				as $studentId){
 			$student = Student::getInstance($studentId);
 			$students[$student->getDisplayname()]=$student;}
 		return $students;}
 	public final function getSubject(){
-		$subjectName = lessonSchedule::getField('subject');
+		$subjectName = $this->getField('subject');
 		$subject = Subject::getSubject($subjectName);
 		return $subject;}
-	public final function getLocation(){
-		$locationName = lessonSchedule::getField('location');
-		$location = location::fetchLocation($locationName);
-		return $location;}
 	public final function getLocationSlot(){
-		$locationSlotName = lessonSchedule::getField('locationSlot');
-		return $this->getLocation()->
+		$locationName = $this->getField('locationName');
+		$location = location::fetchLocation($locationName);
+		$locationSlotName = $this->getField('locationSlotName');
+		return $location->
 			getSlots()[$locationSlotName];}		
-	public final function getTimeSlotSchedule(){
-		$timeSlotScheduleId = lessonSchedule::getField('timeSlotSchedulePointer');
-		$timeSlotSchedule = timeSlotSchedule::getInstance($timeSlotScheduleId);
-		return $timeSlotSchedule;}
+	public final function getTimeSlots(){
+		$timeSlotsPointer = $this->getField('timeSlotsPointer');
+		$timeSlots = timeSlot::getInstance($timeSlotsPointer);
+		return $timeSlots;}
 
 	public final function setTutors($tutors){
 		$tutorIds=array();
 		foreach ($tutors
 				as $tutor){
 			$tutorIds[$tutor->getDisplayname()]=$tutor->getName();}
-		lessonSchedule::setField('tutorsPointers', $tutorIds);}
+		$this->setField('tutorsPointers', $tutorIds);}
 	public final function setStudents($students){
 		$studentIds=array();
 		foreach ($students
 				as $student){
 			$studentIds[$student->getDisplayname()]=$student->getName();}
-		lessonSchedule::setField('studentsPointers', $studentIds);}
-	public final function setTimeSlotSchedule(timeSlotSchedule $timeSlotSchedule){
-		$nowSchedule = $this->getTimeSlotSchedule();
-		lessonSchedule::setField('timeSlotSchedulePointer', $timeSlotSchedule->getName());
-		if ($lessonSchedule->overlaps()) 
-			lessonSchedule::setField('timeSlotSchedulePointer', $nowSchedule->getName());}
-	public final function setLocation(location $location){
-		lessonSchedule::setField('location', $location->getName());}
+		$this->setField('studentsPointers', $studentIds);}
+	public final function setTimeSlots(timeSlot $timeSlots){
+		$oldTimeSlots = $this->getTimeSlots();
+		$this->setField('timeSlotsPointer', $timeSlots->getName());
+if ($this->overlaps()) {
+			$this->setField('timeSlotsPointer', $oldTimeSlots->getName());
+//			$timeSlotSchedule->destroy();
+			throw new Exception('Location not available');}
+		else //$nowSchedule->destroy()
+;}
 	public final function setLocationSlot(locationSlot $locationSlot){
-		lessonSchedule::setField('locationSlot', $locationSlot->getName());}
+		$this->setField('locationName', $locationSlot->getLocation()->getName());
+		$this->setField('locationSlot', $locationSlot->getName());}
 	public final function setSubject(Subject $subject){
-		lessonSchedule::setField('subject', $subject->getName());}
+		$this->setField('subject', $subject->getName());}
 	
-	public static final function getLessonSchedule($tutors, $students, timeSlotSchedule $timeSlotSchedule, locationSlot $locationSlot, Subject $subject){
-		while (static::fetchInstance($name=getRandomString())!==null){}
-		$lessonSchedule = lessonSchedule::getInstance($name);
-		$lessonSchedule->setTutors($tutors);
-		$lessonSchedule->setStudents($students);
-		$lessonSchedule->setSubject($subject);
-		$lessonSchedule->setLocation($locationSlot->getLocation());
-		$lessonSchedule->setLocationSlot($locationSlot);
+	public static final function getLessons($tutors, $students, timeSlot $timeSlots, locationSlot $locationSlot, Subject $subject){
+		while (lessons::fetchInstance($name=getRandomString())!==null){}
+		$lessons = lessons::getInstance($name);
+		$lessons->setTutors($tutors);
+		$lessons->setStudents($students);
+		$lessons->setSubject($subject);
+		$lessons->setLocationSlot($locationSlot);
 		try{
-			$lessonSchedule->setTimeSlotSchedule($timeSlotSchedule);}
+			$lessons->setTimeSlots($timeSlots);}
 		catch(Exception $e){
-			$lessonSchedule->destroy();
+			$lessons->destroy();
 			return null;}
-		return $lessonSchedule;}
-	
+		return $lessons;}
 	public final function overlaps(){
-		foreach (lessonSchedule::getInstances()
-				as $lessonSchedule){
-			if ($lessonSchedule !== $this &&
-					$lessonSchedule->getLocationSlot() === $this->getLocationSlot()) {
-				if (timeSlotSchedule::overlaps($lessonSchedule->getTimeSlotSchedule(), $this->getTimeSlotSchedule()))
-					return true;}}
+		foreach (lessons::getInstances()
+				as $lessons){
+			if ($lessons !== $this &&
+					$lessons->getLocationSlot() === $this->getLocationSlot()) {
+
+				if (timePeriod::overlaps($lessons->getTimeSlots(), $this->getTimeSlots())){
+					echo 'overlaps';return true;}}}
 		return false;}}
 		
 final class lesson{
@@ -99,8 +99,9 @@ final class lesson{
 		$this->schedule->getTimeSlotSchedule()->cancelRepeat($repeatNumber);}
 	public final function uncancel(){		
 		$this->schedule->getTimeSlotSchedule()->uncancelRepeat($repeatNumber);
-		if ($this->schedule->overlaps())
-			$this->schedule->getTimeSlotSchedule()->cancelRepeat($repeatNumber);}
+		if ($this->schedule->overlaps()){
+			$this->schedule->getTimeSlotSchedule()->cancelRepeat($repeatNumber);
+			throw new Exception('Location not available');}}
 	public final function getCancelled(){;
 		return in_array($this->repeatNumber, 
 			$this->schedule->getTimeSlotSchedule()->getCancelledNumbers());}

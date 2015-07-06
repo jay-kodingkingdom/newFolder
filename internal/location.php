@@ -11,8 +11,13 @@ foreach(array_merge(array()
 		$location->destroy();}
 
 foreach(json_decode(locations)
-			as $locationData => $slots){
-	location::getLocation($locationData['name'], $slots, $locationData['address']);}
+			as $locationName => $locationData){
+	$slots=array();
+	foreach ($locationData as
+		$dataName => $data){
+		if ($dataName=='address') $locationAddress = $data;
+		else $slots[$data]=$data;}
+	location::getLocation($locationName, $slots, $locationAddress);}
 
 final class location extends dataObject{
 	
@@ -37,13 +42,13 @@ final class location extends dataObject{
 	public final function getAddress(){
 		return $this->getField('address');}
 	public final function getSlots(){
-		if ($slots===null){
-			$slots = array();
+		if ($this->slots===null){
+			$this->slots = array();
 			foreach ($this->getField('locationSlots')
 						as $slotName){
-				$slots[$slotName] = new locationSlot();
-				$slots[$slotName]->slotName=$slotName;
-				$slots[$slotName]->location=$this;}}
+				$this->slots[$slotName] = new locationSlot();
+				$this->slots[$slotName]->slotName=$slotName;
+				$this->slots[$slotName]->location=$this;}}
 		return array_merge(array()
 		, $this->slots);}}
 

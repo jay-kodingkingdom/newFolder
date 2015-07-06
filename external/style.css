@@ -1,0 +1,81 @@
+/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;}
+
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+	display: block;}
+body {
+	line-height: 1;}
+ol, ul {
+	list-style: none;}
+blockquote, q {
+	quotes: none;}
+blockquote:before, blockquote:after,
+q:before, q:after {
+	content: '';
+	content: none;}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;}
+
+
+p {
+	white-space: pre;}
+
+.container {
+	margin: 0 auto;
+	text-align: center;
+	width: 90%;
+	border-style: solid;
+	border-width: 5px;}
+
+a {
+	text-decoration : none;}
+
+.timetable table, tr, th, td {
+	border: 1px solid black;}
+.timetable table {
+	border-collapse: collapse;
+	width: 100%}
+.timetable table td {
+	border-left: 1px solid #000;}
+.timetable table td:first-child {
+	border-left: none; }
+.timetable th {
+	width: 10%;}
+.timetable td {
+	width: 10%;}
+
+.box { 
+	margin: 20px;
+	background-color: yellow;
+	width: 70px;
+	height: 140px;
+	display: inline-block;}
+.box p {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);} 
