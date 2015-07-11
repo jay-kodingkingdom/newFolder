@@ -12,25 +12,37 @@ require_once('Admin.php');
 require_once('lesson.php');
 require_once('encryption.php');
 
-Admin::getAdmin('nishman','totalnish','nish');
+Admin::getAdmin('nishman','totalnish','Nishil','somemail@mail.nish','777777777');
 
-/*var_dump(timeGrid::getTimeGrid());
+/*var_dump(call_user_func_array('array_merge'
+		, (array(array_values(array(1,324,345))
+							,array_values(array(4,3,3,3,4))
+							,array_values(array(6,7877,888))))));
+
+var_dump(timeGrid::getTimeGrid());
+*/
+
+$weekday = 'Wed';
+$hour = '08';
+$minute = '50';
+$dt = new DateTime (date(timeGrid::dateTimeFormat, strtotime('this '.$weekday.' '.$hour.':'.$minute, strtotime(timeGrid::epochDate))));
+echo $dt->format($format);
 
 echo '<br>';
-echo date(timePeriod::timeFormat, strtotime('this Monday 06:00', strtotime('05-01-2015')));
+echo date(timeGrid::dateTimeFormat, strtotime('this Monday 06:00', (new DateTime('2015-01-05'))->getTimeStamp()));
 echo '<br>';
-echo date(timePeriod::timeFormat, strtotime('this Tuesday 06:00', strtotime('05-01-2015')));
+echo date(timeGrid::dateTimeFormat, strtotime('this Tuesday 06:00', strtotime('2015-01-05')));
 echo '<br>';
-echo date(timePeriod::timeFormat, strtotime('this Wednesday 06:00', strtotime('05-01-2015')));
+echo date(timeGrid::dateTimeFormat, strtotime('this Wednesday 06:00', strtotime('2015-01-05')));
 echo '<br>';
-echo date(timePeriod::timeFormat, strtotime('this Thursday 06:00', strtotime('05-01-2015')));
+echo date(timeGrid::dateTimeFormat, strtotime('this Thursday 06:00', strtotime('05-01-2015')));
 echo '<br>';
-echo date(timePeriod::timeFormat, strtotime('this Friday 06:00', strtotime('05-01-2015')));
+echo date(timeGrid::dateTimeFormat, strtotime('this Friday 06:00', strtotime('05-01-2015')));
 echo '<br>';
-echo date(timePeriod::timeFormat, strtotime('this Saturday 06:00', strtotime('05-01-2015')));
+echo date(timeGrid::dateTimeFormat, strtotime('this Saturday 06:00', strtotime('05-01-2015')));
 echo '<br>';
-echo date(timePeriod::timeFormat, strtotime('this Sunday 06:00', strtotime('05-01-2015')));
-
+echo date(timeGrid::dateTimeFormat, strtotime('this Sunday 06:00', strtotime('05-01-2015')));
+/*
 dataObject::getInstance('objname');
 dataObject::getInstance('objname2');
 dataObject::getInstance('objname3');
@@ -161,21 +173,21 @@ echo 'Tutors have Lessons, TimeSlots, Progress Reports, Payment, and Homework He
 $week = new DateInterval('P7D');
 //$twodays = new DateInterval('P2D');
 
-
-$timeSlot = timeGrid::fetchGridSlots('Wednesday',1530,1730);
+$tasddddddDDDDDDDDDDAAAAimeSlot = timeSlot::getTimeSlot(timeGrid::fetchGridIntervals('Wed',1530,1730));
+var_dump($tasddddddDDDDDDDDDDAAAAimeSlot->getTimeIntervals());
 //$timeSlot1=$timeSlot ;
 
 //$startTime = DateTime::createFromFormat(timeSlot::timeFormat,'2015-08-14T14:30:00+0800');
 //$endTime = DateTime::createFromFormat(timeSlot::timeFormat,'2015-08-14T15:31:00+0800');
-$timeSlot2 = timeGrid::fetchGridSlots('Tuesday',600,630);
+$timeSlot2 = timeSlot::getTimeSlot(timeGrid::fetchGridIntervals('Tue',600,630));
 
 //$startTime = DateTime::createFromFormat(timeSlot::timeFormat,'2015-08-14T16:00:00+0800');
 //$endTime = DateTime::createFromFormat(timeSlot::timeFormat,'2015-08-14T18:00:00+0800');
-$timeSlot3 = timeGrid::fetchGridSlots('Friday',1530,1730);
+$timeSlot3 = timeSlot::getTimeSlot(timeGrid::fetchGridIntervals('Fri',1530,1730));
 
 //$startTime = DateTime::createFromFormat(timeSlot::timeFormat,'2015-08-14T10:30:00+0800');
 //$endTime = DateTime::createFromFormat(timeSlot::timeFormat,'2015-08-14T12:31:00+0800');
-$timeSlot4 = timeGrid::fetchGridSlots('Sunday',1530,1730);
+$timeSlot4 = timeSlot::getTimeSlot(timeGrid::fetchGridIntervals('Sun',1530,1730));
 
 /*echo '<br><br><br><br>';
 for($i=1;$i<5;$i++){
@@ -188,10 +200,14 @@ $physics = Subject::getSubject('Physics');
 $literature = Subject::getSubject('lovelit');
 $econ = Subject::getSubject('ecooon');
 
-$hisslots = timeSlot::getTimeSlots();
-$hisslots->addTimePeriods($timeSlot->getTimePeriods());
-$hisslots->addTimePeriods($timeSlot2->getTimePeriods());
-var_dump($hisslots->getTimePeriods());
+$hisslots = timeSlot::getTimeSlot();
+$hisslots->addTimeIntervals($tasddddddDDDDDDDDDDAAAAimeSlot->getTimeIntervals());
+$hisslots->addTimeIntervals($timeSlot2->getTimeIntervals());
+
+$tasddddddDDDDDDDDDDAAAAimeSlot->destroy();
+$timeSlot2->destroy();
+$timeSlot3->destroy();
+$timeSlot4->destroy();
 
 $marktutor = (Tutor::fetchTutor('littleman') ? Tutor::fetchTutor('littleman') : 
 		
@@ -199,12 +215,14 @@ $marktutor = (Tutor::fetchTutor('littleman') ? Tutor::fetchTutor('littleman') :
 		Tutor::getTutor(
 				'bigmark'
 				,'myname'
-				,array($physics,$literature,$econ)
+				,'mark'
+				,'mark@mark.mark'
+				,'63727'
 				,$hisslots
+				,array($physics,$literature,$econ)
 				,"Genius in everything. French. Speaks 24 languages fluently."
 				, false
-				, 2000
-				, 'littleman'));
+				, 2000));
 
 $matthewstu = (Student::fetchStudent('kiddo') ? Student::fetchStudent('kiddo') : 
 		
@@ -212,8 +230,10 @@ $matthewstu = (Student::fetchStudent('kiddo') ? Student::fetchStudent('kiddo') :
 		Student::getStudent(
 				'micky'
 				,'ricky'
-				,'loves licky, needs lit help'
-				, 'kiddo'));
+				,'Matthew'
+				,'thew@hhtew.w'
+				,'234'
+				,'loves licky, needs lit help'));
 
 
 /*

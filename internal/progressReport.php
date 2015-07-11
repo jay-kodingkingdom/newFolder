@@ -1,4 +1,5 @@
 <?php
+
 require_once('dataObject.php');
 require_once('Tutor.php');
 require_once('Student.php');
@@ -26,7 +27,7 @@ final class progressReport extends dataObject{
 	private final function setStudent(Student $student){
 		$this->setField('studentPointer', $student->getName());}
 	private final function setMonthTime(DateTime $time){
-		$this->setField('monthTime',$time->format(timePeriod::timeFormat));}
+		$this->setField('monthTime',$time->format(timeInterval::timeFormat));}
 	public final function setContent($content){
 		$this->setField('content', $content);}
 		

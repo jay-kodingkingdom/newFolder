@@ -1,7 +1,6 @@
 <?php
 
 require_once('page.php');
-
 $page = null;
 $login = null;
 

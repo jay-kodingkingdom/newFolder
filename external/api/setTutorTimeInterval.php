@@ -1,15 +1,24 @@
 <?php
+require_once('../../debug.php');
+require_once('../../internal/pureFetchLogin.php');
+if (! $loggedin==='true'
+		|| ! $login->getUser()->getClassName()==='Admin')
+	exit();
+
+
 if (!isset($_GET['username'])
 		|| !isset($_GET['gridTime'])
 		|| !isset($_GET['weekday'])
 		|| !isset($_GET['value']))
 	exit();
 
-if (strlen($_GET['gridTime']) !== 4)
+$gridTime = $_GET['gridTime'];
+		
+if (strlen($gridTime) !== 4)
 	exit();
 
-$hour = substr($_GET['gridTime'], 0, 2);
-$minute = substr($_GET['gridTime'], 2, 2);
+$hour = substr($gridTime, 0, 2);
+$minute = substr($gridTime, 2, 2);
 
 if ($hour !== '06'
 		&& $hour !== '07'
@@ -41,30 +50,30 @@ if ($minute !== '00'
 		
 $weekday = $_GET['weekday'];
 
-if ($weekday !== 'Monday'
-		&& $weekday !== 'Tuesday'
-		&& $weekday !== 'Wednesday'
-		&& $weekday !== 'Thursday'
-		&& $weekday !== 'Friday'
-		&& $weekday !== 'Saturday'
-		&& $weekday !== 'Sunday' )
+if ($weekday !== 'Mon'
+		&& $weekday !== 'Tue'
+		&& $weekday !== 'Wed'
+		&& $weekday !== 'Thu'
+		&& $weekday !== 'Fri'
+		&& $weekday !== 'Sat'
+		&& $weekday !== 'Sun' )
 			exit();
 
 require_once('../../internal/Tutor.php');
 require_once('../../internal/timeSlot.php');
 		
 $username = $_GET['username'];
-$user = null;
+$someuser = null;
 	
 foreach (
 		Tutor::getInstances()
 		as
 		$someUser){
 	if ($username === $someUser->getUsername()) {
-		$user = $someUser;
+		$someuser = $someUser;
 		break;}}
 
-if ($user === null)
+if ($someuser === null)
 	exit();
 
 $value = $_GET['value'];
@@ -72,13 +81,13 @@ $value = $_GET['value'];
 header("content-type:application/json");
 
 if ($value === 'true'){
-	$user->getTimeSlot()->addTimePeriod(
-			timeGrid::fetchGridSlot($weekday, $gridTime));}
+	$someuser->getTimeSlot()->addTimeInterval(
+			timeGrid::fetchGridInterval($weekday, $gridTime));}
 else {
-	$user->getTimeSlot()->removeTimePeriod(
-			timeGrid::fetchGridSlot($weekday, $gridTime));}
+	$someuser->getTimeSlot()->removeTimeInterval(
+			timeGrid::fetchGridInterval($weekday, $gridTime));}
 
-$gridPeriod = timeGrid::fetchGridSlot($weekday, $gridTime);
-$result = in_array($gridPeriod, $user->getTimeSlot()->getTimePeriods());	
+$gridInterval = timeGrid::fetchGridInterval($weekday, $gridTime);
+$result = in_array($gridInterval, $someuser->getTimeSlot()->getTimeIntervals());	
 
 echo json_encode($result);

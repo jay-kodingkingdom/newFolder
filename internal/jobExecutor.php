@@ -7,14 +7,14 @@ require_once('timeSlot.php');
 final class JobExecutor extends dataObject{
 
 	const className='JobExecutor';
-	const classFields=array('jobPointer','timeSlotsPointer');
+	const classFields=array('jobPointer','timeSlotPointer');
 	
-	public static final function scheduleJob($jobPointer, timeSlot $timeSlots){
+	public static final function scheduleJob($jobPointer, timeSlot $timeSlot){
 		while (JobExecutor::fetchInstance($name=getRandomString())!==null){}
 
 		$jobExecutor = JobExecutor::getInstance($name);
 		$jobExecutor->setField('jobPointer',$jobPointer);
-		$jobExecutor->setField('timeSlotsPointer',$timeSlots->getName());
+		$jobExecutor->setField('timeSlotPointer',$timeSlot->getName());
 		$jobExecutor->orderJobSchedule();
 		return $jobExecutor;}
 

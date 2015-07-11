@@ -1,7 +1,5 @@
 <?php
 
-require_once('pureGetLogin.php');
-
 echo (
 <<<EOT
 var pageId = $pageId;

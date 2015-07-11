@@ -29,64 +29,44 @@
 			require_once('../internal/timeSlot.php');
 												
 			$username = $encryption->decrypt($_GET['user']);
-			$user = null;
+			$someuser = null;
 					
 			foreach (
 					array_merge(Admin::getInstances()
 							, Tutor::getInstances()
 							, Student::getInstances())
 					as
-						$someUser){
-				if ($username === $someUser->getUsername()) {
-					$user = $someUser;
+						$someoneUser){
+				if ($username === $someoneUser->getUsername()) {
+					$someuser = $someoneUser;
 					break;}}
 
 			
 					
-			if ($user->getClassName()==='Admin'){
+			if ($someuser->getClassName()==='Admin'){
 				?>
 					<pre>
-					User name: <?php echo $user->getUsername(); ?>
-					Display name: <?php echo $user->getDisplayname(); ?>
+User name: <?php say($someuser->getUsername()); ?>
+Real name: <?php say($someuser->getRealname()); ?>
+Email: <?php say($someuser->getEmail()); ?>
+Mobile Number: <?php say($someuser->getMobileNumber()); ?>
 					</pre> <?php }
 
 			
-			elseif ($user->getClassName()==='Tutor'){
+			elseif ($someuser->getClassName()==='Tutor'){
+				$getNameFunc = function(&$someuser){
+					return $someuser->getName();};
 				?>
-						
-					<script type="text/javascript">
-						function toggleTimeSlot(gridTime, weekday) {
-
-							var request = new XMLHttpRequest();
-						    request.onreadystatechange = function()
-						    {
-						        if (request.readyState == 4 && request.status == 200)
-						        {
-						            callback(request.responseText); // Another callback here
-						        }
-						    }; 
-						    request.open('GET', url);
-						    request.send();
-						
-							
-						    var request = (window.XMLHttpRequest) ? 
-												new XMLHttpRequest() : new ActiveXObject("Msxml2.XMLHTTP");
-						
-						    if (xmlHttpRequest == null)
-							return;
-						
-						    xmlHttpRequest.open("GET", "api/setTutorTimslot.php", true);
-												
-						    xmlHttpRequest.send(null); } </script> 
-				
 					<pre>
-					User name: <?php say($user->getUsername()); ?>
-					Display name: <?php say($user->getDisplayname()); ?>
-					Subjects: <?php say(json_encode($user->getSubjects())); ?>
-					Is Full Time: <?php say($user->getFullTime() ? 'Yes' : 'No'); ?>
-					Hourly Rate: <?php say($user->getHourlyRate()); ?>
-					Profile: <?php say($user->getProfile()); ?>
-					TimeSlots:
+User name: <?php say($someuser->getUsername()); ?>
+Real name: <?php say($someuser->getRealname()); ?>
+Email: <?php say($someuser->getEmail()); ?>
+Mobile Number: <?php say($someuser->getMobileNumber()); ?>
+Subjects: <?php say(implode(',  ', array_map($getNameFunc, $someuser->getSubjects()))); ?>
+Is Full Time: <?php say($someuser->getFullTime() ? 'Yes' : 'No'); ?>
+Hourly Rate: <?php say($someuser->getHourlyRate()); ?>
+Profile: <?php say($someuser->getProfile()); ?>
+TimeSlots:
 					</pre>
 	
 					<div class="timetable">
@@ -96,8 +76,8 @@
 								<?php
 									echo '<tr>';
 									echo '<th>Weekday</th>';
-									foreach (array('Monday','Tuesday','Wednesday','Thursday'
-											,'Friday','Saturday','Sunday') as $weekday){
+									foreach (array('Mon','Tue','Wed','Thu'
+											,'Fri','Sat','Sun') as $weekday){
 										echo '<th>';
 										echo $weekday;
 										echo '</th>';}
@@ -111,25 +91,64 @@
 												echo '<th rowspan="6">';
 												echo sprintf('%02d', $hour).':00';
 												echo '</th>';}
-											foreach (array('Monday','Tuesday','Wednesday','Thursday'
-													,'Friday','Saturday','Sunday') as $weekday){
-												echo '<td align="center">';
+											foreach (array('Mon','Tue','Wed','Thu'
+													,'Fri','Sat','Sun') as $weekday){
+
 												$gridTime= $hour*100 + $minute;
-												$gridPeriod = timeGrid::fetchGridSlot($weekday, $gridTime);
-												$overlaps = $overlaps = in_array($gridPeriod, $user->getTimeSlot()->getTimePeriods());
-												echo ( $overlaps ? 'X':'&nbsp;');
+												$gridInterval = timeGrid::fetchGridInterval($weekday, $gridTime);
+												$timeSlotHas = in_array($gridInterval, $someuser->getTimeSlot()->getTimeIntervals());
+												$available = in_array($gridInterval, $someuser->getFreeTimeIntervals());
+												echo '<td align="center" id="'.$weekday.sprintf('%04d', $gridTime).'">';
+												echo ( $timeSlotHas ? ( $available ? 'O':'X'):'&nbsp;');
 												echo '</td>';}
-											echo '</tr>';}} ?> </tbody> </table> </div> <?php }
+											echo '</tr>';}} ?> </tbody> </table> </div> 
+											
+											
+					<script type="text/javascript">
+						function toggleTimeSlot(gridTime, weekday, value) {
+
+							eksplode();
+							var request = new XMLHttpRequest();
+						    request.onreadystatechange = function() {
+						        if (request.readyState == 4
+							        	&& request.status == 200) {
+						        	document.getElementById(weekday+String(gridTime)).innerHTML = (request.responseText === 'true' ? 'O' : '&nbsp;');}}; 
+						    request.open("GET", "api/setTutorTimeInterval.php?pageId=<?php echo json_decode($pageId);
+						    											?>&username=<?php echo $someuser->getUsername(); ?>"+
+							    										 "&gridTime="+gridTime+
+							    										 "&weekday="+weekday+
+							    										 "&value="+value);
+						    request.send();} 
 
 
-			elseif ($user->getClassName()==='Student'){
-				say('<a href="addstudent.php?pageId='.json_decode($pageId).'">');
-				say('<div id="addstudent" class="box">');
-				say('<p>Add a Student</p>');
-				say('</div>');
-				say('</a>');}
-	
-				say('</div>');
-			//else {
-			//throw new Exception('Undefined user class!');}
-				 ?> </body> </html>
+						var weekdays = ["Mon", "Tue", "Wed"
+										, "Thu", "Fri", "Sat"
+										, "Sun"];
+
+						var getAction = function (gridTime, weekday, value) {
+							if (value === null) return function(){};
+						    return function() { toggleTimeSlot(gridTime, weekday, value); };}
+						
+						for (var weeknum = 0; weeknum < weekdays.length; weeknum++){
+							var weekday = weekdays[weeknum];
+						    for (var hour = 6; hour < 24; hour++){
+						    	for (var minute = 0; minute < 60; minute += 10){
+									var gridTime = ("0"+hour).slice(-2) + ("0"+minute).slice(-2);
+							    	var timeGridElement = document.getElementById(weekday + gridTime);
+									
+									var action = getAction( gridTime, weekday, (timeGridElement.innerHTML === "O" ? "false" : (timeGridElement.innerHTML === "&nbsp;" ? "true" : null)));
+									
+						    		timeGridElement.onclick = action; }}} </script>
+					
+					<script src="clickExplode.js"></script><?php }
+
+
+			elseif ($someuser->getClassName()==='Student'){
+				?>
+					<pre>
+User name: <?php say($someuser->getUsername()); ?>
+Real name: <?php say($someuser->getRealname()); ?>
+Email: <?php say($someuser->getEmail()); ?>
+Mobile Number: <?php say($someuser->getMobileNumber()); ?>
+Profile: <?php say($someuser->getProfile()); ?>
+					</pre> <?php } ?></div> </body> </html>

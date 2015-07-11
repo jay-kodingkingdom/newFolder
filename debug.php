@@ -3,6 +3,8 @@
 ini_set('display_errors', 'On');
 error_reporting(E_ALL | E_STRICT);
 
+define('rootPath', __DIR__);
+
 function printdebug($obj){
 	$approxVariableName=null;
 	foreach($GLOBALS as $var_name => $value) {

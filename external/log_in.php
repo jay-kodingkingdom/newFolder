@@ -32,8 +32,8 @@
 	
 	<body>
 		<pre>
-			<?php 
-				loggedin_echo('You are already logged in!', 'You are not logged in!'); ?> </pre>
+<?php 
+	loggedin_echo('You are already logged in!', 'You are not logged in!'); ?> </pre>
 		
 		<form name="login" method='GET' onSubmit='getLogin()' action="log_in.php">
 			<table>

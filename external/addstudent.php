@@ -1,4 +1,5 @@
 <?php
+
 	require_once('../debug.php');
 	require_once('../internal/pureFetchLogin.php');
 	if (isset($_GET['user'])
@@ -22,7 +23,7 @@
 			<?php
 				require_once('../internal/fetchLogin.php');?> </script>
 		<script type="text/javascript">
-			function getAdmin(){
+			function getStudent(){
 				if (window.document.newAdmin.plainPassword.value !==
 							window.document.newAdmin.passwordConfirm.value){
 					 alert('Please make sure your passwords are the same');
@@ -66,11 +67,11 @@
 					
 					if ($existingUser!==null)
 						alert('Another user with the same username already exists!');
-					
-					Admin::getAdmin($username, $password, $realname);
+						
+					Student::getStudent($username, $password, $displayname, '');
 					?>
 						<script type="text/javascript">
-							alert('Admin successfully created!'); </script> <?php }
+							alert('Student successfully created!'); </script> <?php }
 
 				catch (Exception $e){
 					?>
@@ -80,15 +81,15 @@
 				
 
 						
-		Add an Admin!
+		Add a Student!
 		
 		<br>
 		
-		<form name="newAdmin" method='GET'
-				onSubmit='return getAdmin();'
-				action="addadmin.php">
+		<form name="newStudent" method='GET'
+				onSubmit='return getStudent();'
+				action="addstudent.php">
 			<table>
-				<tr><td>Realname:<input type='text' name='plainRealname' value=''></td></tr>
+				<tr><td>Real name:<input type='text' name='plainRealname' value=''></td></tr>
 				<tr><td>Username:<input type='text' name='plainUsername' value=''></td></tr>
 				<tr><td>Password:<input type='password' name='plainPassword' value=''></td></tr>
 				<tr><td>Please type your password again:<input type='password' name='passwordConfirm' value=''></td></tr>

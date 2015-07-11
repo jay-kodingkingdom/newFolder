@@ -7,14 +7,12 @@ require_once('timeSlot.php');
 final class payment extends dataObject{
 
 	const className='payment';
-	const classFields=array('payContractPointer',
-			,'userPointer'
+	const classFields=array('payInfoPointer',
 			'timePointer'
-			,'paySummary'
 			,'payAmount','payDone'
 	);
 
-	public final function getUser(){
+	public final function getTutor(){
 		return Tutor::fetchInstance($this->getField('tutorPointer'));}
 	public final function getMonthTime(){
 		return DateTime::createFromFormat(

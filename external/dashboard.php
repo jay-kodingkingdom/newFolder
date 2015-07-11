@@ -23,21 +23,23 @@
 	<?php 
 		require_once('../internal/misc.php');
 		
-		if ($login->getUser()->getClassName()==='Admin'){
-			say('<p>You are an Admin!</p>');
-			say('<br>');
-			say('<div class="container">');
-			say('<a href="users.php?pageId='.json_decode($pageId).'">');
-			say('<div id="users" class="box">');
-			say('<p>Users</p>');
-			say('</div>');
-			say('</a>');
-			say('<a href="tutors.php">');
-			say('<div id="tutors" class="box">');
-			say('<p>Tutors</p>');
-			say('</div>');
-			say('</a>');
-			say('</div>');}
+		if ($login->getUser()->getClassName()==='Admin'){ ?>
+<p>You are an Admin!</p>
+			<br>
+			<div class="container">
+				<a href="users.php?pageId=<?php echo json_decode($pageId); ?>">
+					<div id="users" class="box">
+<p>Users</p>
+						</div> </a>
+			
+				<a href="lessons.php?pageId=<?php echo json_decode($pageId); ?>">
+					<div id="lessons" class="box">
+<p>Lessons</p>
+						</div> </a>
+				<a href="phpConsole.php?pageId=<?php echo json_decode($pageId); ?>">
+					<div id="phpconsole" class="box">
+<p>PHP &shy;Console</p>
+						</div> </a>  </div> <?php }			
 		elseif ($login->getUser()->getClassName()==='Tutor'){
 			say('<p>You are a Tutor!</p>');
 			say('<br>');

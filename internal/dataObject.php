@@ -45,7 +45,7 @@ class dataObject{
 	private static function fetchResult($question){
 		$result = dataObject::getDatabase()->query($question);
 		if (!$result)
-			throw new Exception('Database query error');
+			throw new Exception('Database query error, query:'.$question);
 		return $result;}
 	private static function getResult($question){
 		$result = dataObject::getDatabase()->query($question);
@@ -82,7 +82,7 @@ class dataObject{
 		$dataFieldsFormat = "";
 		foreach (static::classFields as $field){
 			$dataFieldsFormat .= ', '.
-				$field.' blob ';}
+				$field.' mediumblob ';}
 		#echo '<br>making new sql class'.$callCount;
 		dataObject::fetchResult(
 			'create table '.$objClass.

@@ -37,3 +37,18 @@ class User extends dataObject{
 					$user->getPassword() == $password)
 						return $user;}
 		return null;}}
+		
+trait contactInfo {
+
+	public final function setRealname($realname){
+		$this->setField('realname',$realname);}
+	public final function getRealname(){
+		return $this->getField('realname');}
+	public final function setEmail($email){
+		$this->setField('email',$email);}
+	public final function getEmail(){
+		return $this->getField('email');}
+	public final function setMobileNumber($mobileNumber){
+		$this->setField('mobileNumber',$mobileNumber);}
+	public final function getMobileNumber(){
+		return $this->getField('mobileNumber');}}

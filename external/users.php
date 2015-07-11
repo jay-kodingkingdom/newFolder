@@ -20,6 +20,23 @@
 			<?php
 				require_once('../internal/fetchLogin.php');?> </script>
 		<script type="text/javascript">
+			function _search(){
+		    	var element = document.getElementById("search");
+				var search = window.document.search.searchText.value;
+				var filter = "";
+
+				for (var index = 0
+						, getArray = location.search.substr(1).split("&")
+							; index < getArray.length
+							; index++) {
+			        if (getArray[index].split("=")[0] === "filter") {
+						search = getArray[index].split("=")[1];
+				        break;}}
+		        							    
+			    window.location.href = "lessons.php?pageId="+pageId
+											+"&filter="+filter
+			    							+"&search="+search; } </script>
+		<script type="text/javascript">
 			function filter(){
 		    	var element = document.getElementById("filter");
 				var filter = encodeURIComponent(
@@ -97,7 +114,7 @@
 					<a href="user.php?pageId=<?php
 									echo json_decode($pageId);
 								?>&user=<?php
-									echo $page->getEncryption()->encrypt($user->getUsername())?>">
+									echo $page->getEncryption()->encrypt($user->getUsername()); ?>">
 						<div class="box">
 							<p><?php echo $user->getUsername(); ?></p></div></a> <?php }
 		
